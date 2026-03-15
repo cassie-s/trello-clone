@@ -1,0 +1,103 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 10px 8px;
+  cursor: pointer;
+  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+.dragging {
+  cursor: grabbing;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+}
+
+.labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  color: #fff;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.body {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.deleteBtn {
+  opacity: 0;
+  color: var(--text-subtle);
+  padding: 3px;
+  border-radius: 4px;
+  transition: opacity var(--transition), color var(--transition), background var(--transition);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.card:hover .deleteBtn { opacity: 1; }
+.deleteBtn:hover { color: var(--red); background: rgba(248,113,113,0.1); }
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.due, .recurring {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.overdue {
+  color: var(--red);
+  background: rgba(248,113,113,0.12);
+}
+
+.recurring {
+  color: var(--accent);
+  background: var(--accent-glow);
+  text-transform: capitalize;
+}
+
+.desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}

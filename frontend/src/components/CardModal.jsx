@@ -1,0 +1,306 @@
+import { useState, useEffect } from "react";
+import { X, Trash2, RefreshCw, Calendar, Tag, Plus } from "lucide-react";
+import { format } from "date-fns";
+import styles from "./CardModal.module.css";
+
+const LABEL_COLORS = [
+  "#7c6aff", "#ff6a9d", "#4ade80", "#fbbf24",
+  "#60a5fa", "#f97316", "#a78bfa", "#34d399",
+  "#fb7185", "#38bdf8",
+];
+
+const FREQ_OPTIONS = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+];
+
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+export default function CardModal({ card, lists, onClose, onUpdate, onDelete }) {
+  const [title, setTitle] = useState(card.title);
+  const [description, setDescription] = useState(card.description || "");
+  const [dueDate, setDueDate] = useState(
+    card.dueDate ? format(new Date(card.dueDate), "yyyy-MM-dd") : ""
+  );
+  const [recurring, setRecurring] = useState({
+    enabled: card.recurring?.enabled || false,
+    frequency: card.recurring?.frequency || "weekly",
+    interval: card.recurring?.interval || 1,
+    daysOfWeek: card.recurring?.daysOfWeek || [],
+    dayOfMonth: card.recurring?.dayOfMonth || 1,
+  });
+  const [labels, setLabels] = useState(card.labels || []);
+  const [newLabelText, setNewLabelText] = useState("");
+  const [newLabelColor, setNewLabelColor] = useState(LABEL_COLORS[0]);
+  const [showLabelForm, setShowLabelForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await onUpdate(card._id, {
+        title: title.trim() || card.title,
+        description,
+        dueDate: dueDate || null,
+        recurring,
+        labels,
+      });
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await onDelete(card._id);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  function addLabel() {
+    if (!newLabelText.trim()) return;
+    setLabels((prev) => [...prev, { text: newLabelText.trim(), color: newLabelColor }]);
+    setNewLabelText("");
+    setShowLabelForm(false);
+  }
+
+  function removeLabel(i) {
+    setLabels((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function toggleDay(day) {
+    setRecurring((prev) => ({
+      ...prev,
+      daysOfWeek: prev.daysOfWeek.includes(day)
+        ? prev.daysOfWeek.filter((d) => d !== day)
+        : [...prev.daysOfWeek, day],
+    }));
+  }
+
+  const list = lists.find((l) => l._id === card.listId);
+
+  return (
+    <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modal}>
+        {/* Header */}
+        <div className={styles.modalHeader}>
+          <div className={styles.headerLeft}>
+            {list?.color && (
+              <span className={styles.listDot} style={{ background: list.color }} />
+            )}
+            <span className={styles.listName}>{list?.title}</span>
+          </div>
+          <button className={styles.closeBtn} onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Recurring badge */}
+        {card.isRecurringInstance && (
+          <div className={styles.recurringBadge}>
+            <RefreshCw size={12} />
+            This is a recurring instance
+          </div>
+        )}
+
+        <div className={styles.body}>
+          {/* Title */}
+          <div className={styles.field}>
+            <label className={styles.label}>Title</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={styles.titleInput}
+            />
+          </div>
+
+          {/* Description */}
+          <div className={styles.field}>
+            <label className={styles.label}>Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add a description…"
+              rows={3}
+            />
+          </div>
+
+          {/* Due Date */}
+          <div className={styles.field}>
+            <label className={styles.label}>
+              <Calendar size={13} />
+              Due Date
+            </label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+          </div>
+
+          {/* Labels */}
+          <div className={styles.field}>
+            <label className={styles.label}>
+              <Tag size={13} />
+              Labels
+            </label>
+            <div className={styles.labelsList}>
+              {labels.map((lbl, i) => (
+                <span key={i} className={styles.labelChip} style={{ background: lbl.color }}>
+                  {lbl.text}
+                  <button onClick={() => removeLabel(i)} className={styles.labelRemove}>
+                    <X size={10} />
+                  </button>
+                </span>
+              ))}
+              <button
+                className={styles.addLabelBtn}
+                onClick={() => setShowLabelForm((p) => !p)}
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+
+            {showLabelForm && (
+              <div className={styles.labelForm}>
+                <input
+                  autoFocus
+                  placeholder="Label text"
+                  value={newLabelText}
+                  onChange={(e) => setNewLabelText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addLabel()}
+                  className={styles.labelInput}
+                />
+                <div className={styles.labelColors}>
+                  {LABEL_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      className={`${styles.colorDot} ${newLabelColor === c ? styles.colorDotActive : ""}`}
+                      style={{ background: c }}
+                      onClick={() => setNewLabelColor(c)}
+                    />
+                  ))}
+                </div>
+                <button className={styles.addLabelConfirm} onClick={addLabel}>
+                  Add label
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Recurring */}
+          <div className={styles.field}>
+            <label className={styles.label}>
+              <RefreshCw size={13} />
+              Recurring
+            </label>
+
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={recurring.enabled}
+                onChange={(e) => setRecurring((p) => ({ ...p, enabled: e.target.checked }))}
+              />
+              <span className={styles.toggleTrack}>
+                <span className={styles.toggleThumb} />
+              </span>
+              <span className={styles.toggleLabel}>
+                {recurring.enabled ? "Enabled" : "Disabled"}
+              </span>
+            </label>
+
+            {recurring.enabled && (
+              <div className={styles.recurringOptions}>
+                <div className={styles.recurringRow}>
+                  <span className={styles.recurringRowLabel}>Repeat every</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={99}
+                    value={recurring.interval}
+                    onChange={(e) =>
+                      setRecurring((p) => ({ ...p, interval: parseInt(e.target.value) || 1 }))
+                    }
+                    className={styles.intervalInput}
+                  />
+                  <select
+                    value={recurring.frequency}
+                    onChange={(e) => setRecurring((p) => ({ ...p, frequency: e.target.value }))}
+                    className={styles.freqSelect}
+                  >
+                    {FREQ_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {recurring.frequency === "weekly" && (
+                  <div className={styles.daysRow}>
+                    {DAYS.map((d, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className={`${styles.dayBtn} ${recurring.daysOfWeek.includes(i) ? styles.dayBtnActive : ""}`}
+                        onClick={() => toggleDay(i)}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {recurring.frequency === "monthly" && (
+                  <div className={styles.recurringRow}>
+                    <span className={styles.recurringRowLabel}>Day of month</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={31}
+                      value={recurring.dayOfMonth}
+                      onChange={(e) =>
+                        setRecurring((p) => ({ ...p, dayOfMonth: parseInt(e.target.value) || 1 }))
+                      }
+                      className={styles.intervalInput}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className={styles.footer}>
+          <button
+            className={styles.deleteBtn}
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            <Trash2 size={14} />
+            {deleting ? "Deleting…" : "Delete"}
+          </button>
+          <div className={styles.footerRight}>
+            <button className={styles.cancelBtn} onClick={onClose}>
+              Cancel
+            </button>
+            <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

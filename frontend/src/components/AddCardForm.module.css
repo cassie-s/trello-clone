@@ -1,0 +1,41 @@
+.form {
+  padding: 4px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.input {
+  min-height: 58px;
+  resize: none;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.addBtn {
+  flex: 1;
+  padding: 6px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity var(--transition);
+}
+
+.addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.addBtn:not(:disabled):hover { opacity: 0.85; }
+
+.cancelBtn {
+  padding: 6px 10px;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  transition: background var(--transition);
+}
+
+.cancelBtn:hover { background: var(--surface3); }
