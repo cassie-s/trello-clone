@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Trash2, RefreshCw, Calendar, Tag } from "lucide-react";
+import { Trash2, RefreshCw, Calendar, CheckSquare } from "lucide-react";
 import { format } from "date-fns";
 import styles from "./CardItem.module.css";
 
@@ -26,6 +26,13 @@ export default function CardItem({ card, listId, onDelete, onEdit, isDragging })
 
   const isOverdue =
     card.dueDate && new Date(card.dueDate) < new Date() && !card.archived;
+
+  const checklistProgress = card.checklist?.length > 0
+    ? {
+        total: card.checklist.length,
+        checked: card.checklist.filter((item) => item.checked).length,
+      }
+    : null;
 
   return (
     <div
@@ -63,7 +70,7 @@ export default function CardItem({ card, listId, onDelete, onEdit, isDragging })
       </div>
 
       {/* Meta row */}
-      {(card.dueDate || card.recurring?.enabled || card.isRecurringInstance) && (
+      {(card.dueDate || card.recurring?.enabled || card.isRecurringInstance || checklistProgress) && (
         <div className={styles.meta}>
           {card.dueDate && (
             <span className={`${styles.due} ${isOverdue ? styles.overdue : ""}`}>
@@ -75,6 +82,14 @@ export default function CardItem({ card, listId, onDelete, onEdit, isDragging })
             <span className={styles.recurring} title={card.isRecurringInstance ? "Recurring instance" : "Recurring"}>
               <RefreshCw size={11} />
               {card.recurring?.frequency || "recurring"}
+            </span>
+          )}
+          {checklistProgress && (
+            <span 
+              className={`${styles.checklist} ${checklistProgress.checked === checklistProgress.total ? styles.checklistComplete : ""}`}
+            >
+              <CheckSquare size={11} />
+              {checklistProgress.checked}/{checklistProgress.total}
             </span>
           )}
         </div>

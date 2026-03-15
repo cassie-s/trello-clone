@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Trash2, RefreshCw, Calendar, Tag, Plus } from "lucide-react";
+import { X, Trash2, RefreshCw, Calendar, Tag, Plus, CheckSquare, Square } from "lucide-react";
 import { format } from "date-fns";
 import styles from "./CardModal.module.css";
 
@@ -23,6 +23,8 @@ export default function CardModal({ card, lists, onClose, onUpdate, onDelete }) 
   const [dueDate, setDueDate] = useState(
     card.dueDate ? format(new Date(card.dueDate), "yyyy-MM-dd") : ""
   );
+  const [checklist, setChecklist] = useState(card.checklist || []);
+  const [newChecklistItem, setNewChecklistItem] = useState("");
   const [recurring, setRecurring] = useState({
     enabled: card.recurring?.enabled || false,
     frequency: card.recurring?.frequency || "weekly",
@@ -51,6 +53,7 @@ export default function CardModal({ card, lists, onClose, onUpdate, onDelete }) 
         title: title.trim() || card.title,
         description,
         dueDate: dueDate || null,
+        checklist,
         recurring,
         labels,
       });
@@ -67,6 +70,22 @@ export default function CardModal({ card, lists, onClose, onUpdate, onDelete }) 
     } finally {
       setDeleting(false);
     }
+  }
+
+  function addChecklistItem() {
+    if (!newChecklistItem.trim()) return;
+    setChecklist((prev) => [...prev, { text: newChecklistItem.trim(), checked: false }]);
+    setNewChecklistItem("");
+  }
+
+  function toggleChecklistItem(index) {
+    setChecklist((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, checked: !item.checked } : item))
+    );
+  }
+
+  function removeChecklistItem(index) {
+    setChecklist((prev) => prev.filter((_, i) => i !== index));
   }
 
   function addLabel() {
@@ -135,6 +154,59 @@ export default function CardModal({ card, lists, onClose, onUpdate, onDelete }) 
               placeholder="Add a description…"
               rows={3}
             />
+          </div>
+
+          {/* Checklist */}
+          <div className={styles.field}>
+            <label className={styles.label}>
+              <CheckSquare size={13} />
+              Checklist
+            </label>
+            {checklist.length > 0 && (
+              <div className={styles.checklistItems}>
+                {checklist.map((item, i) => (
+                  <div key={i} className={styles.checklistItem}>
+                    <button
+                      type="button"
+                      className={styles.checkbox}
+                      onClick={() => toggleChecklistItem(i)}
+                    >
+                      {item.checked ? (
+                        <CheckSquare size={16} className={styles.checkboxChecked} />
+                      ) : (
+                        <Square size={16} />
+                      )}
+                    </button>
+                    <span className={item.checked ? styles.checklistTextChecked : styles.checklistText}>
+                      {item.text}
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.checklistRemove}
+                      onClick={() => removeChecklistItem(i)}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className={styles.checklistInput}>
+              <input
+                placeholder="Add checklist item…"
+                value={newChecklistItem}
+                onChange={(e) => setNewChecklistItem(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addChecklistItem()}
+              />
+              <button
+                type="button"
+                className={styles.checklistAddBtn}
+                onClick={addChecklistItem}
+                disabled={!newChecklistItem.trim()}
+              >
+                <Plus size={14} />
+              </button>
+            </div>
           </div>
 
           {/* Due Date */}

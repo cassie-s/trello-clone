@@ -69,6 +69,7 @@ const CardSchema = new mongoose.Schema(
     position: { type: Number, default: 0 },
     labels: [{ text: String, color: String }],
     dueDate: { type: Date },
+    checklist: [{ text: String, checked: { type: Boolean, default: false } }],
     // Recurring card settings
     recurring: {
       enabled: { type: Boolean, default: false },

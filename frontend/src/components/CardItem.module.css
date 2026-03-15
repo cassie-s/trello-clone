@@ -32,10 +32,21 @@
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 99px;
-  color: #fff;
+  color: transparent;
   letter-spacing: 0.03em;
-  text-transform: uppercase;
   opacity: 0.9;
+  transition: color var(--transition);
+  max-height: 5px;
+  min-width: 32px;
+  max-width: 32px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.card:hover .label {
+  max-height: 32px;
+  color: #fff;
+  max-width: 200px;
 }
 
 .body {
@@ -91,6 +102,22 @@
   color: var(--accent);
   background: var(--accent-glow);
   text-transform: capitalize;
+}
+
+.checklist {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 11px;
+}
+
+.checklistComplete {
+  color: var(--green);
+  background: rgba(74, 222, 128, 0.12);
 }
 
 .desc {

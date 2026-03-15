@@ -357,3 +357,103 @@
 
 .saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 .saveBtn:not(:disabled):hover { opacity: 0.85; }
+
+/* Checklist */
+.checklistItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+.checklistItem:hover {
+  background: var(--surface3);
+}
+
+.checkbox {
+  color: var(--text-muted);
+  transition: color var(--transition);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox:hover {
+  color: var(--accent);
+}
+
+.checkboxChecked {
+  color: var(--accent);
+}
+
+.checklistText {
+  flex: 1;
+  color: var(--text);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.checklistTextChecked {
+  flex: 1;
+  color: var(--text-muted);
+  line-height: 1.4;
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.checklistRemove {
+  color: var(--text-subtle);
+  opacity: 0;
+  transition: opacity var(--transition), color var(--transition);
+  flex-shrink: 0;
+  padding: 2px;
+}
+
+.checklistItem:hover .checklistRemove {
+  opacity: 1;
+}
+
+.checklistRemove:hover {
+  color: var(--red);
+}
+
+.checklistInput {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.checklistInput input {
+  flex: 1;
+}
+
+.checklistAddBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition);
+  flex-shrink: 0;
+}
+
+.checklistAddBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checklistAddBtn:not(:disabled):hover {
+  opacity: 0.85;
+}
