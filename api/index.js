@@ -15,19 +15,42 @@ app.use(
 app.use(express.json());
 
 // ─── MongoDB Connection ──────────────────────────────────────────────────────
+// In serverless environments (Vercel), the module may be reused across
+// invocations. We cache the connection promise on the global object so we
+// never open more than one connection per worker instance.
+let _connectionPromise = null;
+
 const connectDB = async () => {
-  const state = mongoose.connection.readyState;
-  // 1 = connected, 2 = connecting
-  if (state === 1 || state === 2) return;
-  await mongoose.connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 8000,
-  });
-  console.log("MongoDB connected");
+  // readyState: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
+  if (mongoose.connection.readyState === 1) return;
+
+  if (!_connectionPromise) {
+    _connectionPromise = mongoose
+      .connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        // Keep the connection alive between serverless invocations
+        maxPoolSize: 10,
+        bufferCommands: false,
+      })
+      .then((m) => {
+        console.log("MongoDB connected");
+        return m;
+      })
+      .catch((e) => {
+        // Reset so the next request can retry
+        _connectionPromise = null;
+        throw e;
+      });
+  }
+
+  await _connectionPromise;
 };
 
 // Ensure DB is connected before every API request
 app.use("/api", async (req, res, next) => {
   try {
+    await connectDB();
     next();
   } catch (e) {
     console.error("DB connection failed:", e.message);
