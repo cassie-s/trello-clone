@@ -51,7 +51,6 @@
 }
 
 .listName {
-  font-size: 12px;
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -74,7 +73,6 @@
   background: var(--accent-glow);
   border: 1px solid rgba(124, 106, 255, 0.3);
   border-radius: var(--radius-sm);
-  font-size: 12px;
   color: var(--accent);
   flex-shrink: 0;
 }
@@ -98,7 +96,6 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -288,13 +285,16 @@
 .addLabelConfirm {
   padding: 6px;
   background: var(--accent);
-  color: #fff;
+  color: var(--text-muted);
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
 }
 
-.addLabelConfirm:hover { opacity: 0.85; }
+.addLabelConfirm:hover { 
+  background: var(--surface3); 
+  color: #fff;
+}
 
 /* Footer */
 .footer {
@@ -335,16 +335,24 @@
   transition: background var(--transition);
 }
 
-.cancelBtn:hover { background: var(--surface3); }
+.cancelBtn:hover { 
+  background: var(--surface3);
+  color: #fff;
+}
 
 .saveBtn {
   padding: 7px 16px;
   font-size: 13px;
   font-weight: 500;
   background: var(--accent);
-  color: #fff;
+  color: var(--text-muted);
   border-radius: var(--radius-sm);
   transition: opacity var(--transition);
+}
+
+.saveBtn:hover { 
+  background: var(--surface3); 
+  color: #fff;
 }
 
 .saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }

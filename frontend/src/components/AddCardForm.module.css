@@ -26,7 +26,7 @@
   transition: opacity var(--transition);
 }
 
-.addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.addBtn:disabled { opacity: 0.5; cursor: not-allowed; color: var(--text-muted) }
 .addBtn:not(:disabled):hover { opacity: 0.85; }
 
 .cancelBtn {
@@ -38,4 +38,7 @@
   transition: background var(--transition);
 }
 
-.cancelBtn:hover { background: var(--surface3); }
+.cancelBtn:hover { 
+  background: var(--surface3);
+  color: #fff; 
+}

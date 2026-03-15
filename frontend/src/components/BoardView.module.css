@@ -25,7 +25,7 @@
   gap: 16px;
   padding: 0 20px;
   height: 52px;
-  background: rgba(0,0,0,0.25);
+  background-color: rgba(92, 153, 103, 0.717);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255,255,255,0.07);
   flex-shrink: 0;
@@ -39,7 +39,7 @@
   color: rgba(255,255,255,0.7);
   padding: 5px 10px;
   border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   transition: background var(--transition), color var(--transition);
 }
 
@@ -62,6 +62,7 @@
 }
 
 .listsScroll {
+  background-color: rgba(92, 153, 103, 0.828);
   flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
@@ -101,7 +102,7 @@
 .addListBtn:hover { background: rgba(255,255,255,0.16); }
 
 .addListForm {
-  background: rgba(15,15,20,0.85);
+  background: rgba(92, 153, 103, 0.718);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -120,7 +121,7 @@
   flex: 1;
   padding: 7px;
   background: var(--accent);
-  color: #fff;
+  color: var(--text-muted);
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
@@ -138,4 +139,4 @@
   transition: background var(--transition);
 }
 
-.addListCancel:hover { background: var(--surface3); }
+.addListCancel:hover { background: var(--surface3); color: #fff; }

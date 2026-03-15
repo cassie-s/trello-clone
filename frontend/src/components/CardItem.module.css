@@ -29,7 +29,6 @@
 }
 
 .label {
-  font-size: 10px;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 99px;
@@ -47,7 +46,6 @@
 
 .title {
   flex: 1;
-  font-size: 13px;
   font-weight: 500;
   color: var(--text);
   line-height: 1.4;
@@ -78,7 +76,6 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 11px;
   color: var(--text-muted);
   background: var(--surface2);
   padding: 2px 7px;
@@ -97,7 +94,6 @@
 }
 
 .desc {
-  font-size: 11px;
   color: var(--text-muted);
   line-height: 1.4;
 }
