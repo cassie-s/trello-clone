@@ -121,6 +121,24 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
     }));
   }
 
+  // Collect all unique labels from all cards
+  function getExistingLabels() {
+    const allLabels = [];
+    Object.values(cards).forEach((cardList) => {
+      cardList.forEach((card) => {
+        if (card.labels) {
+          card.labels.forEach((label) => {
+            // Check if this label already exists in allLabels
+            if (!allLabels.find(l => l.text === label.text && l.color === label.color)) {
+              allLabels.push({ text: label.text, color: label.color });
+            }
+          });
+        }
+      });
+    });
+    return allLabels;
+  }
+
   // ── Drag & Drop ───────────────────────────────────────────────────────────
 
   function findListOfCard(cardId) {
@@ -300,6 +318,7 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
         <CardModal
           card={editingCard}
           lists={lists}
+          existingLabels={getExistingLabels()}
           onClose={() => setEditingCard(null)}
           onUpdate={handleUpdateCard}
           onDelete={(cardId) => handleDeleteCard(cardId, editingCard.listId)}

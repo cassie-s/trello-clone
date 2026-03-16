@@ -17,7 +17,7 @@ const FREQ_OPTIONS = [
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function CardModal({ card, lists, onClose, onUpdate, onDelete }) {
+export default function CardModal({ card, lists, existingLabels = [], onClose, onUpdate, onDelete }) {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || "");
   const [dueDate, setDueDate] = useState(
@@ -93,6 +93,12 @@ export default function CardModal({ card, lists, onClose, onUpdate, onDelete }) 
     setLabels((prev) => [...prev, { text: newLabelText.trim(), color: newLabelColor }]);
     setNewLabelText("");
     setShowLabelForm(false);
+  }
+
+  function addExistingLabel(label) {
+    // Check if label already exists on this card
+    if (labels.find(l => l.text === label.text && l.color === label.color)) return;
+    setLabels((prev) => [...prev, label]);
   }
 
   function removeLabel(i) {
@@ -247,27 +253,50 @@ export default function CardModal({ card, lists, onClose, onUpdate, onDelete }) 
 
             {showLabelForm && (
               <div className={styles.labelForm}>
-                <input
-                  autoFocus
-                  placeholder="Label text"
-                  value={newLabelText}
-                  onChange={(e) => setNewLabelText(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addLabel()}
-                  className={styles.labelInput}
-                />
-                <div className={styles.labelColors}>
-                  {LABEL_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      className={`${styles.colorDot} ${newLabelColor === c ? styles.colorDotActive : ""}`}
-                      style={{ background: c }}
-                      onClick={() => setNewLabelColor(c)}
-                    />
-                  ))}
+                {existingLabels.length > 0 && (
+                  <div className={styles.existingLabels}>
+                    <span className={styles.existingLabelsTitle}>Existing labels:</span>
+                    <div className={styles.existingLabelsList}>
+                      {existingLabels
+                        .filter(existingLabel => !labels.find(l => l.text === existingLabel.text && l.color === existingLabel.color))
+                        .map((label, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className={styles.existingLabelChip}
+                            style={{ background: label.color }}
+                            onClick={() => addExistingLabel(label)}
+                          >
+                            {label.text}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                <div className={styles.newLabelSection}>
+                  <span className={styles.newLabelTitle}>Or create new:</span>
+                  <input
+                    autoFocus
+                    placeholder="Label text"
+                    value={newLabelText}
+                    onChange={(e) => setNewLabelText(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addLabel()}
+                    className={styles.labelInput}
+                  />
+                  <div className={styles.labelColors}>
+                    {LABEL_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        className={`${styles.colorDot} ${newLabelColor === c ? styles.colorDotActive : ""}`}
+                        style={{ background: c }}
+                        onClick={() => setNewLabelColor(c)}
+                      />
+                    ))}
+                  </div>
+                  <button className={styles.addLabelConfirm} onClick={addLabel}>
+                    Add label
+                  </button>
                 </div>
-                <button className={styles.addLabelConfirm} onClick={addLabel}>
-                  Add label
-                </button>
               </div>
             )}
           </div>
