@@ -269,6 +269,27 @@ app.post("/api/boards/:boardId/lists/reorder", async (req, res) => {
 });
 
 // ─── Card Routes ──────────────────────────────────────────────────────────────
+// Get archived cards for a board
+app.get("/api/boards/:boardId/archived-cards", async (req, res) => {
+  try {
+    const query = { boardId: req.params.boardId, archived: true };
+    // Optional label filter
+    if (req.query.label) {
+      query["labels.text"] = req.query.label;
+    }
+    // Optional date filters
+    if (req.query.from) {
+      query.updatedAt = { ...query.updatedAt, $gte: new Date(req.query.from) };
+    }
+    if (req.query.to) {
+      query.updatedAt = { ...query.updatedAt, $lte: new Date(req.query.to) };
+    }
+    const cards = await Card.find(query).sort({ updatedAt: -1 });
+    res.json(cards);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 app.get("/api/lists/:listId/cards", async (req, res) => {
   try {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import ArchivedCardsModal from "./ArchivedCardsModal.jsx";
 import {
   DndContext,
   DragOverlay,
@@ -24,6 +25,7 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
   const [activeCard, setActiveCard] = useState(null); // for drag overlay
   const [editingCard, setEditingCard] = useState(null); // for modal
   const [draggedCard, setDraggedCard] = useState(null);
+  const [showArchivedModal, setShowArchivedModal] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -217,6 +219,12 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
         </button>
         <h1 className={styles.boardTitle}>{board.title}</h1>
         <div style={{ flex: 1 }} />
+        <button
+          style={{ marginLeft: 12, background: 'var(--surface2)', color: 'var(--text-muted)', borderRadius: 6, padding: '7px 14px', fontSize: 13, fontWeight: 500 }}
+          onClick={() => setShowArchivedModal(true)}
+        >
+          View archived
+        </button>
       </header>
 
       {loading ? (
@@ -295,6 +303,14 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
           onClose={() => setEditingCard(null)}
           onUpdate={handleUpdateCard}
           onDelete={(cardId) => handleDeleteCard(cardId, editingCard.listId)}
+        />
+      )}
+
+      {showArchivedModal && (
+        <ArchivedCardsModal
+          boardId={board._id}
+          lists={lists}
+          onClose={() => setShowArchivedModal(false)}
         />
       )}
     </div>

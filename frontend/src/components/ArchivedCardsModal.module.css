@@ -1,0 +1,138 @@
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.filterLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.loading {
+  color: var(--text-muted);
+  padding: 20px;
+  text-align: center;
+}
+
+.empty {
+  color: var(--text-subtle);
+  padding: 20px;
+  text-align: center;
+}
+
+.cardList {
+  list-style: none;
+  padding: 0;
+}
+
+.cardListItem {
+  margin-bottom: 18px;
+}
+
+.archivedCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.archivedCard:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.labelsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cardLabel {
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  color: #fff;
+  letter-spacing: 0.03em;
+  opacity: 0.9;
+  font-size: 12px;
+  margin-bottom: 2px;
+  max-height: 32px;
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.cardTitle {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+  word-break: break-word;
+  font-size: 15px;
+}
+
+.deleteBtn {
+  opacity: 1;
+  color: var(--text-subtle);
+  padding: 3px;
+  border-radius: 4px;
+  transition: color var(--transition), background var(--transition);
+  flex-shrink: 0;
+  margin-top: 1px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.deleteBtn:hover {
+  color: var(--red);
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.dueDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 12px;
+}
+
+.description {
+  color: var(--text-subtle);
+  font-size: 12px;
+  line-height: 1.4;
+}

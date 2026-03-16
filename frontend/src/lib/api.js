@@ -45,3 +45,7 @@ export const api = {
     return req("GET", `/boards/${boardId}/archived-cards${query}`);
   },
 };
+
+if (typeof window !== "undefined") {
+  window.api = api;
+}
