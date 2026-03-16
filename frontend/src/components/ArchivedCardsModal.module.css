@@ -136,3 +136,26 @@
   font-size: 12px;
   line-height: 1.4;
 }
+
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.loadMoreBtn {
+  padding: 8px 16px;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.loadMoreBtn:hover {
+  background: var(--surface3);
+  color: var(--text);
+}

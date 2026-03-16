@@ -10,6 +10,7 @@ export default function ArchivedCardsModal({ boardId, lists, onClose }) {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [labels, setLabels] = useState([]);
+  const [displayCount, setDisplayCount] = useState(10);
 
   // Fetch all archived cards once on mount to populate labels
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function ArchivedCardsModal({ boardId, lists, onClose }) {
   // Fetch filtered cards when filters change
   useEffect(() => {
     fetchArchivedCards();
+    setDisplayCount(10); // Reset display count when filters change
   }, [boardId, labelFilter, dateFrom, dateTo]);
 
   async function handleDelete(cardId) {
@@ -51,6 +53,12 @@ export default function ArchivedCardsModal({ boardId, lists, onClose }) {
 
   // Sort by most recent
   const sortedCards = [...archivedCards].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  const displayedCards = sortedCards.slice(0, displayCount);
+  const hasMore = sortedCards.length > displayCount;
+
+  function loadMore() {
+    setDisplayCount(prev => prev + 10);
+  }
 
   return (
     <div className={modalStyles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -82,8 +90,9 @@ export default function ArchivedCardsModal({ boardId, lists, onClose }) {
           ) : sortedCards.length === 0 ? (
             <div className={styles.empty}>No archived cards found.</div>
           ) : (
-            <ul className={styles.cardList}>
-              {sortedCards.map(card => (
+            <>
+              <ul className={styles.cardList}>
+                {displayedCards.map(card => (
                 <li key={card._id} className={styles.cardListItem}>
                   <div className={styles.archivedCard}>
                     {/* Labels */}
@@ -124,7 +133,15 @@ export default function ArchivedCardsModal({ boardId, lists, onClose }) {
                   </div>
                 </li>
               ))}
-            </ul>
+              </ul>
+              {hasMore && (
+                <div className={styles.loadMoreContainer}>
+                  <button className={styles.loadMoreBtn} onClick={loadMore}>
+                    Load more ({sortedCards.length - displayCount} remaining)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
