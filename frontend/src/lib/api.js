@@ -34,4 +34,14 @@ export const api = {
   deleteCard: (id) => req("DELETE", `/cards/${id}`),
   moveCard: (id, listId, position) => req("POST", `/cards/${id}/move`, { listId, position }),
   reorderCards: (listId, order) => req("POST", `/lists/${listId}/cards/reorder`, { order }),
+  archiveCard: (id) => req("PATCH", `/cards/${id}`, { archived: true }),
+  unarchiveCard: (id) => req("PATCH", `/cards/${id}`, { archived: false }),
+  getArchivedCards: (boardId, { label, from, to } = {}) => {
+    const params = new URLSearchParams();
+    if (label) params.append('label', label);
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+    const query = params.toString() ? `?${params}` : '';
+    return req("GET", `/boards/${boardId}/archived-cards${query}`);
+  },
 };

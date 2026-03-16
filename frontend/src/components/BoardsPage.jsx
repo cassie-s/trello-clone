@@ -100,8 +100,7 @@ export default function BoardsPage({ boards, onSelectBoard, onCreateBoard, onDel
                   title="Delete board"
                 >
                   <Trash2 size={14} />
-                </button>
-              </div>
+                </button>              </div>
             </div>
           ))}
           {boards.length === 0 && !showNew && (

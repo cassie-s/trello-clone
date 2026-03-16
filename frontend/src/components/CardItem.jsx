@@ -1,10 +1,10 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Trash2, RefreshCw, Calendar, CheckSquare } from "lucide-react";
+import { Trash2, RefreshCw, Calendar, CheckSquare, Archive } from "lucide-react";
 import { format } from "date-fns";
 import styles from "./CardItem.module.css";
 
-export default function CardItem({ card, listId, onDelete, onEdit, isDragging }) {
+export default function CardItem({ card, listId, onDelete, onEdit, isDragging, onArchive }) {
   const {
     attributes,
     listeners,
@@ -59,6 +59,13 @@ export default function CardItem({ card, listId, onDelete, onEdit, isDragging })
       )}
 
       <div className={styles.body}>
+        <button
+          className={styles.archiveBtn}
+          onClick={(e) => { e.stopPropagation(); onArchive(); }}
+          title="Archive card"
+        >
+          <Archive size={12} />
+        </button>
         <span className={styles.title}>{card.title}</span>
         <button
           className={styles.deleteBtn}

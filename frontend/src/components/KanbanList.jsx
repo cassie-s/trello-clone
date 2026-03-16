@@ -14,7 +14,7 @@ const LIST_COLORS = [
   "#fb7185", "#38bdf8",
 ];
 
-export default function KanbanList({ list, cards, onUpdateList, onDeleteList, onAddCard, onDeleteCard, onEditCard }) {
+export default function KanbanList({ list, cards, onUpdateList, onDeleteList, onAddCard, onDeleteCard, onEditCard, onArchiveCard }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [colorPicker, setColorPicker] = useState(false);
   const [addingCard, setAddingCard] = useState(false);
@@ -152,6 +152,7 @@ export default function KanbanList({ list, cards, onUpdateList, onDeleteList, on
               card={card}
               listId={list._id}
               onDelete={() => onDeleteCard(card._id, list._id)}
+              onArchive={() => onArchiveCard(card._id, list._id)}
               onEdit={() => onEditCard(card)}
             />
           ))}

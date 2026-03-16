@@ -111,6 +111,14 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
     if (editingCard?._id === cardId) setEditingCard(null);
   }
 
+    async function handleArchiveCard(cardId, listId) {
+    await api.archiveCard(cardId);
+    setCards((prev) => ({
+      ...prev,
+      [listId]: (prev[listId] || []).filter((c) => c._id !== cardId),
+    }));
+  }
+
   // ── Drag & Drop ───────────────────────────────────────────────────────────
 
   function findListOfCard(cardId) {
@@ -233,6 +241,7 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
                   onAddCard={handleAddCard}
                   onDeleteCard={handleDeleteCard}
                   onEditCard={setEditingCard}
+                  onArchiveCard={handleArchiveCard}
                 />
               ))}
 
@@ -272,7 +281,7 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
           <DragOverlay>
             {draggedCard && (
               <div style={{ transform: "rotate(2deg)", opacity: 0.95 }}>
-                <CardItem card={draggedCard} isDragging />
+                <CardItem card={draggedCard} isDragging onArchive={() => {}} />
               </div>
             )}
           </DragOverlay>
