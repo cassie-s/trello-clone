@@ -11,6 +11,22 @@ export default function ArchivedCardsModal({ boardId, lists, onClose }) {
   const [dateTo, setDateTo] = useState("");
   const [labels, setLabels] = useState([]);
 
+  // Fetch all archived cards once on mount to populate labels
+  useEffect(() => {
+    async function fetchAllArchivedCards() {
+      try {
+        const allCards = await window.api.getArchivedCards(boardId, {});
+        // Collect all unique labels for dropdown
+        const allLabels = Array.from(new Set(allCards.flatMap(c => c.labels?.map(l => l.text) || [])));
+        setLabels(allLabels);
+      } catch (error) {
+        console.error('Failed to fetch labels:', error);
+      }
+    }
+    fetchAllArchivedCards();
+  }, [boardId]);
+
+  // Fetch filtered cards when filters change
   useEffect(() => {
     fetchArchivedCards();
   }, [boardId, labelFilter, dateFrom, dateTo]);
@@ -28,9 +44,6 @@ export default function ArchivedCardsModal({ boardId, lists, onClose }) {
       if (dateTo) params.to = dateTo;
       const cards = await window.api.getArchivedCards(boardId, params);
       setArchivedCards(cards);
-      // Collect all labels for dropdown
-      const allLabels = Array.from(new Set(cards.flatMap(c => c.labels?.map(l => l.text) || [])));
-      setLabels(allLabels);
     } finally {
       setLoading(false);
     }
@@ -92,7 +105,7 @@ export default function ArchivedCardsModal({ boardId, lists, onClose }) {
                         title="Delete card"
                         onClick={() => handleDelete(card._id)}
                       >
-                        <Trash2 />
+                        <Trash2 size={12} />
                       </button>
                     </div>
                     {/* Meta row */}

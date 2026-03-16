@@ -17,7 +17,8 @@ const FREQ_OPTIONS = [
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function CardModal({ card, lists, existingLabels = [], onClose, onUpdate, onDelete }) {
+export default function CardModal({ card, lists, existingLabels = [], onClose, onSave, onDelete }) {
+  const isNewCard = card._id === null;
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || "");
   const [dueDate, setDueDate] = useState(
@@ -47,11 +48,15 @@ export default function CardModal({ card, lists, existingLabels = [], onClose, o
   }, [onClose]);
 
   async function handleSave() {
+    if (!title.trim()) {
+      return; // Don't save if title is empty
+    }
     setSaving(true);
     try {
-      await onUpdate(card._id, {
-        title: title.trim() || card.title,
+      await onSave(card._id, {
+        title: title.trim(),
         description,
+        listId: card.listId,
         dueDate: dueDate || null,
         checklist,
         recurring,
@@ -145,8 +150,10 @@ export default function CardModal({ card, lists, existingLabels = [], onClose, o
           <div className={styles.field}>
             <label className={styles.label}>Title</label>
             <input
+              autoFocus={isNewCard}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              placeholder={isNewCard ? "Enter card title..." : ""}
               className={styles.titleInput}
             />
           </div>
@@ -384,20 +391,23 @@ export default function CardModal({ card, lists, existingLabels = [], onClose, o
 
         {/* Footer */}
         <div className={styles.footer}>
-          <button
-            className={styles.deleteBtn}
-            onClick={handleDelete}
-            disabled={deleting}
-          >
-            <Trash2 size={14} />
-            {deleting ? "Deleting…" : "Delete"}
-          </button>
+          {!isNewCard && (
+            <button
+              className={styles.deleteBtn}
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              <Trash2 size={14} />
+              {deleting ? "Deleting…" : "Delete"}
+            </button>
+          )}
+          {isNewCard && <div />}
           <div className={styles.footerRight}>
             <button className={styles.cancelBtn} onClick={onClose}>
               Cancel
             </button>
-            <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
-              {saving ? "Saving…" : "Save changes"}
+            <button className={styles.saveBtn} onClick={handleSave} disabled={saving || !title.trim()}>
+              {saving ? "Saving…" : (isNewCard ? "Create card" : "Save changes")}
             </button>
           </div>
         </div>

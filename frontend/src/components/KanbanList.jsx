@@ -4,7 +4,6 @@ import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { MoreHorizontal, Plus, Trash2, Palette, GripVertical, X, Check } from "lucide-react";
 import CardItem from "./CardItem.jsx";
-import AddCardForm from "./AddCardForm.jsx";
 import styles from "./KanbanList.module.css";
 
 const LIST_COLORS = [
@@ -17,7 +16,6 @@ const LIST_COLORS = [
 export default function KanbanList({ list, cards, onUpdateList, onDeleteList, onAddCard, onDeleteCard, onEditCard, onArchiveCard }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [colorPicker, setColorPicker] = useState(false);
-  const [addingCard, setAddingCard] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(list.title);
   const menuRef = useRef(null);
@@ -164,18 +162,10 @@ export default function KanbanList({ list, cards, onUpdateList, onDeleteList, on
       </div>
 
       {/* Add card */}
-      {addingCard ? (
-        <AddCardForm
-          listId={list._id}
-          onAdd={(data) => { onAddCard(list._id, data); setAddingCard(false); }}
-          onCancel={() => setAddingCard(false)}
-        />
-      ) : (
-        <button className={styles.addCard} onClick={() => setAddingCard(true)}>
-          <Plus size={14} />
-          Add a card
-        </button>
-      )}
+      <button className={styles.addCard} onClick={() => onAddCard(list._id)}>
+        <Plus size={14} />
+        Add a card
+      </button>
     </div>
   );
 }

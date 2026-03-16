@@ -84,12 +84,47 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
 
   // ── Card actions ──────────────────────────────────────────────────────────
 
-  async function handleAddCard(listId, data) {
-    const card = await api.createCard(listId, data);
-    setCards((prev) => ({
-      ...prev,
-      [listId]: [...(prev[listId] || []), card],
-    }));
+  function handleStartAddCard(listId) {
+    // Create a temporary new card object to open in the modal
+    const newCard = {
+      _id: null, // null means it's a new card
+      title: "",
+      description: "",
+      listId: listId,
+      boardId: board._id,
+      labels: [],
+      checklist: [],
+      dueDate: null,
+      recurring: {
+        enabled: false,
+        frequency: "weekly",
+        interval: 1,
+        daysOfWeek: [],
+        dayOfMonth: 1,
+      },
+    };
+    setEditingCard(newCard);
+  }
+
+  async function handleSaveCard(cardId, data) {
+    if (cardId === null) {
+      // Create new card
+      const card = await api.createCard(data.listId, data);
+      setCards((prev) => ({
+        ...prev,
+        [data.listId]: [...(prev[data.listId] || []), card],
+      }));
+    } else {
+      // Update existing card
+      const updated = await api.updateCard(cardId, data);
+      setCards((prev) => {
+        const next = { ...prev };
+        Object.keys(next).forEach((lid) => {
+          next[lid] = next[lid].map((c) => (c._id === cardId ? updated : c));
+        });
+        return next;
+      });
+    }
   }
 
   async function handleUpdateCard(cardId, data) {
@@ -264,7 +299,7 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
                   cards={cards[list._id] || []}
                   onUpdateList={handleUpdateList}
                   onDeleteList={handleDeleteList}
-                  onAddCard={handleAddCard}
+                  onAddCard={handleStartAddCard}
                   onDeleteCard={handleDeleteCard}
                   onEditCard={setEditingCard}
                   onArchiveCard={handleArchiveCard}
@@ -320,7 +355,7 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
           lists={lists}
           existingLabels={getExistingLabels()}
           onClose={() => setEditingCard(null)}
-          onUpdate={handleUpdateCard}
+          onSave={handleSaveCard}
           onDelete={(cardId) => handleDeleteCard(cardId, editingCard.listId)}
         />
       )}

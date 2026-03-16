@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kanban-v1';
+const CACHE_NAME = 'kanban-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -20,6 +20,12 @@ self.addEventListener('install', (event) => {
 
 // Cache and return requests
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {

@@ -79,14 +79,21 @@
 .archiveBtn {
   opacity: 0;
   color: var(--text-subtle);
-  padding: 3px;
+  padding: 0;
+  max-width: 0;
+  overflow: hidden;
   border-radius: 4px;
-  transition: opacity var(--transition), color var(--transition), background var(--transition);
+  transition: opacity var(--transition), color var(--transition), background var(--transition), max-width var(--transition), padding var(--transition);
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-.card:hover .archiveBtn { opacity: 1; }
+.card:hover .archiveBtn { 
+  opacity: 1;
+  padding: 3px;
+  max-width: 24px;
+}
+
 .archiveBtn:hover { color: var(--blue); background: rgb(39, 100, 186,0.1); }
 
 .meta {

@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Trash2, RefreshCw, Calendar, CheckSquare, CircleCheckBig } from "lucide-react";
+import { Trash2, RefreshCw, Calendar, CheckSquare, CheckCircle, Check } from "lucide-react";
 import { format } from "date-fns";
 import styles from "./CardItem.module.css";
 
@@ -64,7 +64,7 @@ export default function CardItem({ card, listId, onDelete, onEdit, isDragging, o
           onClick={(e) => { e.stopPropagation(); onArchive(); }}
           title="Archive card"
         >
-          <CircleCheckBig size={12} />
+          <CheckCircle size={12} />
         </button>
         <span className={styles.title}>{card.title}</span>
         <button
