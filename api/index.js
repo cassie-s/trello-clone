@@ -342,11 +342,23 @@ app.post("/api/lists/:listId/cards", async (req, res) => {
 
 app.patch("/api/cards/:id", async (req, res) => {
   try {
-    const card = await Card.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const card = await Card.findById(req.params.id);
     if (!card) return res.status(404).json({ error: "Card not found" });
+
+    // If archiving a recurring instance, update parent's nextDue to trigger next generation
+    if (req.body.archived && card.isRecurringInstance && card.parentCardId) {
+      const parent = await Card.findById(card.parentCardId);
+      if (parent && parent.recurring?.enabled) {
+        // Set nextDue to the next occurrence based on current time
+        parent.recurring.nextDue = computeNextDue(parent.recurring, new Date());
+        await parent.save();
+      }
+    }
+
+    // Update the card itself
+    Object.assign(card, req.body);
+    await card.save();
+    
     res.json(card);
   } catch (e) {
     res.status(400).json({ error: e.message });
