@@ -160,12 +160,22 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
     if (editingCard?._id === cardId) setEditingCard(null);
   }
 
-    async function handleArchiveCard(cardId, listId) {
+  async function handleArchiveCard(cardId, listId) {
+    const card = (cards[listId] || []).find(c => c._id === cardId);
+    const isRecurring = card?.recurring?.enabled;
+    
     await api.archiveCard(cardId);
-    setCards((prev) => ({
-      ...prev,
-      [listId]: (prev[listId] || []).filter((c) => c._id !== cardId),
-    }));
+    
+    // If it's a recurring card, reload the board to show the new instance
+    if (isRecurring) {
+      await loadBoard();
+    } else {
+      // Otherwise just remove it from the list
+      setCards((prev) => ({
+        ...prev,
+        [listId]: (prev[listId] || []).filter((c) => c._id !== cardId),
+      }));
+    }
   }
 
   // Collect all unique labels from all cards

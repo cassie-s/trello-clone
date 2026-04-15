@@ -147,6 +147,8 @@ async function generateRecurringInstances() {
     "recurring.nextDue": { $lte: now },
   });
 
+  console.log(`Checking recurring cards... Found ${recurringCards.length} ready to generate`);
+
   for (const card of recurringCards) {
     // Create a new instance
     const instance = new Card({
@@ -161,12 +163,16 @@ async function generateRecurringInstances() {
       parentCardId: card._id,
     });
     await instance.save();
+    console.log(`✅ Created recurring instance for card "${card.title}"`);
 
     // Update next due
     card.recurring.lastGenerated = now;
     card.recurring.nextDue = computeNextDue(card.recurring, card.recurring.nextDue);
     await card.save();
+    console.log(`   Next due set to: ${card.recurring.nextDue}`);
   }
+  
+  return recurringCards.length;
 }
 
 // ─── Board Routes ─────────────────────────────────────────────────────────────
@@ -305,9 +311,21 @@ app.get("/api/lists/:listId/cards", async (req, res) => {
 app.get("/api/boards/:boardId/cards", async (req, res) => {
   try {
     await generateRecurringInstances();
-    const cards = await Card.find({ boardId: req.params.boardId, archived: false }).sort(
+    const now = new Date();
+    let cards = await Card.find({ boardId: req.params.boardId, archived: false }).sort(
       "position"
     );
+    
+    // Filter out recurring cards that aren't due yet (future scheduled cards)
+    cards = cards.filter(card => {
+      // If card has no due date, show it
+      if (!card.dueDate) return true;
+      // If card is not recurring, show it
+      if (!card.recurring?.enabled) return true;
+      // If recurring and due date is in the future, hide it
+      return new Date(card.dueDate) <= now;
+    });
+    
     res.json(cards);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -327,11 +345,6 @@ app.post("/api/lists/:listId/cards", async (req, res) => {
       position: count,
     };
 
-    // Set up nextDue for recurring cards
-    if (cardData.recurring?.enabled && cardData.recurring?.nextDue === undefined) {
-      cardData.recurring.nextDue = computeNextDue(cardData.recurring);
-    }
-
     const card = new Card(cardData);
     await card.save();
     res.status(201).json(card);
@@ -345,17 +358,36 @@ app.patch("/api/cards/:id", async (req, res) => {
     const card = await Card.findById(req.params.id);
     if (!card) return res.status(404).json({ error: "Card not found" });
 
-    // If archiving a recurring instance, update parent's nextDue to trigger next generation
-    if (req.body.archived && card.isRecurringInstance && card.parentCardId) {
-      const parent = await Card.findById(card.parentCardId);
-      if (parent && parent.recurring?.enabled) {
-        // Set nextDue to the next occurrence based on current time
-        parent.recurring.nextDue = computeNextDue(parent.recurring, new Date());
-        await parent.save();
-      }
+    // If archiving a recurring card, create the next instance immediately
+    if (req.body.archived && card.recurring?.enabled) {
+      // Calculate next occurrence from NOW (not from due date)
+      const nextDueDate = computeNextDue(card.recurring, new Date());
+      
+      // Create new instance for next occurrence
+      const nextInstance = new Card({
+        title: card.title,
+        description: card.description,
+        listId: card.listId,
+        boardId: card.boardId,
+        position: 0, // Put it at the top
+        labels: card.labels,
+        dueDate: nextDueDate,
+        checklist: card.checklist.map(item => ({ text: item.text, checked: false })), // Reset checklist
+        recurring: {
+          enabled: true,
+          frequency: card.recurring.frequency,
+          interval: card.recurring.interval,
+          daysOfWeek: card.recurring.daysOfWeek,
+          dayOfMonth: card.recurring.dayOfMonth,
+        },
+        isRecurringInstance: false,
+        parentCardId: null,
+      });
+      await nextInstance.save();
+      console.log(`🔁 Created next recurring card "${card.title}" - due: ${nextDueDate}`);
     }
 
-    // Update the card itself
+    // Update the card itself (archive it)
     Object.assign(card, req.body);
     await card.save();
     
@@ -407,6 +439,16 @@ app.post("/api/lists/:listId/cards/reorder", async (req, res) => {
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => res.json({ ok: true }));
+
+// ─── Test endpoint to manually trigger recurring card generation ──────────────
+app.post("/api/test/generate-recurring", async (req, res) => {
+  try {
+    const count = await generateRecurringInstances();
+    res.json({ success: true, generated: count, message: `Generated ${count} recurring card instances` });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ─── 404 & error handlers ─────────────────────────────────────────────────────
 app.use("/api", (req, res) => {
