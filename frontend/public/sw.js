@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kanban-v3';
+const CACHE_NAME = 'kanban-v4'; // Bumped to force cache refresh
 const urlsToCache = [
   '/',
   '/index.html',
@@ -23,16 +23,14 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
-  // NEVER cache API requests - always fetch fresh
+  // NEVER cache API requests - just pass through without intercepting
   if (url.pathname.startsWith('/api')) {
-    event.respondWith(fetch(event.request));
-    return;
+    return; // Don't intercept, let browser handle it directly
   }
 
   // Only handle GET requests for caching
   if (event.request.method !== 'GET') {
-    event.respondWith(fetch(event.request));
-    return;
+    return; // Don't intercept, let browser handle it directly
   }
 
   // Network-first strategy for app resources (always get latest, fallback to cache)

@@ -1,16 +1,30 @@
 const BASE = import.meta.env.VITE_API_URL || "/api";
 
 async function req(method, path, body) {
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers: body ? { "Content-Type": "application/json" } : {},
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || "Request failed");
+  try {
+    const options = {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    };
+    
+    // Only use cache: 'no-store' for GET requests (some mobile browsers have issues with it on mutations)
+    if (method === 'GET') {
+      options.cache = 'no-store';
+    }
+    
+    const res = await fetch(`${BASE}${path}`, options);
+    
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      console.error(`API Error (${method} ${path}):`, err);
+      throw new Error(err.error || "Request failed");
+    }
+    return res.json();
+  } catch (error) {
+    console.error(`Request failed (${method} ${path}):`, error);
+    throw error;
   }
-  return res.json();
 }
 
 export const api = {

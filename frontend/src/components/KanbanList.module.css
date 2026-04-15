@@ -31,6 +31,7 @@
   border-radius: 4px;
   transition: color var(--transition);
   flex-shrink: 0;
+  touch-action: none; /* Enable touch drag on mobile */
 }
 
 .dragHandle:hover { color: var(--text-muted); }

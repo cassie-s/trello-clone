@@ -4,6 +4,8 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
+  MouseSensor,
   useSensor,
   useSensors,
   closestCorners,
@@ -25,10 +27,20 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
   const [activeCard, setActiveCard] = useState(null); // for drag overlay
   const [editingCard, setEditingCard] = useState(null); // for modal
   const [draggedCard, setDraggedCard] = useState(null);
+  const [draggedCardOriginalListId, setDraggedCardOriginalListId] = useState(null); // Track original list
   const [showArchivedModal, setShowArchivedModal] = useState(false);
 
+  // Support both mouse/pointer and touch for mobile compatibility
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    useSensor(MouseSensor, { 
+      activationConstraint: { distance: 8 } 
+    }),
+    useSensor(TouchSensor, { 
+      activationConstraint: { delay: 200, tolerance: 6 } 
+    }),
+    useSensor(PointerSensor, { 
+      activationConstraint: { distance: 8 } 
+    })
   );
 
   useEffect(() => {
@@ -189,6 +201,7 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
       const listId = findListOfCard(active.id);
       const card = (cards[listId] || []).find((c) => c._id === active.id);
       setDraggedCard(card);
+      setDraggedCardOriginalListId(listId); // Remember where it started
     }
     setActiveCard(active);
   }
@@ -216,28 +229,41 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
   }
 
   async function handleDragEnd({ active, over }) {
+    const originalListId = draggedCardOriginalListId; // Capture before clearing state
     setActiveCard(null);
     setDraggedCard(null);
+    setDraggedCardOriginalListId(null); // Clear original list tracking
     if (!over) return;
 
     const activeType = active.data.current?.type;
     const overType = over.data.current?.type;
+    console.log('Drag types:', { activeType, overType });
 
     if (activeType === "list") {
       // Reorder lists
       const oldIndex = lists.findIndex((l) => l._id === active.id);
       const newIndex = lists.findIndex((l) => l._id === over.id);
       if (oldIndex === newIndex) return;
+      const oldLists = lists; // Save for rollback
       const newLists = arrayMove(lists, oldIndex, newIndex);
       setLists(newLists);
-      await api.reorderLists(board._id, newLists.map((l) => l._id));
+      try {
+        await api.reorderLists(board._id, newLists.map((l) => l._id));
+        console.log('✅ Lists reordered successfully');
+      } catch (error) {
+        console.error('Failed to reorder lists:', error);
+        setLists(oldLists); // Rollback on error
+        alert('Failed to save list order. Please try again.');
+      }
       return;
     }
 
     if (activeType === "card") {
-      const currentListId = findListOfCard(active.id);
+      const currentListId = originalListId; // Use the original list ID we tracked
       let targetListId = overType === "list" ? over.id : over.data.current?.listId;
       if (!targetListId) targetListId = currentListId;
+      
+      console.log('Card drag:', { currentListId, targetListId });
 
       const listCards = [...(cards[targetListId] || [])];
       const oldIndex = listCards.findIndex((c) => c._id === active.id);
@@ -245,17 +271,39 @@ export default function BoardView({ board, onBack, onBoardUpdate }) {
         ? listCards.findIndex((c) => c._id === over.id)
         : listCards.length - 1;
 
+      console.log('Card positions:', { oldIndex, newIndex });
+
       if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+        const oldCards = { ...cards }; // Save for rollback
         const reordered = arrayMove(listCards, oldIndex, newIndex);
         setCards((prev) => ({ ...prev, [targetListId]: reordered }));
-        await api.reorderCards(targetListId, reordered.map((c) => c._id));
+        console.log('Calling reorderCards API...', { targetListId, cardIds: reordered.map((c) => c._id) });
+        try {
+          await api.reorderCards(targetListId, reordered.map((c) => c._id));
+          console.log('✅ Cards reordered successfully');
+        } catch (error) {
+          console.error('❌ Failed to reorder cards:', error);
+          setCards(oldCards); // Rollback on error
+          alert('Failed to save card order. Please try again.');
+          return; // Don't proceed with move if reorder failed
+        }
       }
 
       // If moved to different list (already done in dragOver, now persist)
       if (currentListId !== targetListId) {
-        await api.moveCard(active.id, targetListId, newIndex);
+        console.log('Calling moveCard API...', { cardId: active.id, targetListId, newIndex });
+        try {
+          await api.moveCard(active.id, targetListId, newIndex);
+          console.log('✅ Card moved successfully');
+        } catch (error) {
+          console.error('❌ Failed to move card:', error);
+          // Reload the board to get correct state
+          await loadBoard();
+          alert('Failed to move card. Please try again.');
+        }
       }
     }
+    console.log('=== DRAG END COMPLETE ===');
   }
 
   const listIds = lists.map((l) => l._id);

@@ -6,6 +6,7 @@
   cursor: pointer;
   transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
   user-select: none;
+  touch-action: none; /* Enable touch drag on mobile */
   display: flex;
   flex-direction: column;
   gap: 5px;
