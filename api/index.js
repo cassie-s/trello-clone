@@ -408,8 +408,15 @@ app.patch("/api/cards/:id", async (req, res) => {
       console.log(`🔁 Created next recurring card "${card.title}" - due: ${nextDueDate}`);
     }
 
-    // Update the card itself (archive it)
+    // Update the card itself
     Object.assign(card, req.body);
+    
+    // Initialize recurring.nextDue if recurring is enabled but nextDue is missing
+    if (card.recurring?.enabled && !card.recurring.nextDue) {
+      card.recurring.nextDue = card.dueDate || new Date();
+      console.log(`✅ Initialized recurring.nextDue for "${card.title}" to ${card.recurring.nextDue}`);
+    }
+    
     await card.save();
     
     res.json(card);
@@ -486,6 +493,37 @@ app.get("/api/debug/recurring", async (req, res) => {
       currentTime: now.toISOString(),
       totalRecurringCards: recurringCards.length,
       cards: details,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── Repair endpoint to fix existing recurring cards ──────────────────────────
+app.post("/api/debug/repair-recurring", async (req, res) => {
+  try {
+    const brokenCards = await Card.find({
+      "recurring.enabled": true,
+      "recurring.nextDue": { $exists: false },
+      archived: false,
+      isRecurringInstance: false,
+    });
+    
+    console.log(`[Repair] Found ${brokenCards.length} broken recurring cards`);
+    
+    const fixed = [];
+    for (const card of brokenCards) {
+      const nextDue = card.dueDate || new Date();
+      card.recurring.nextDue = nextDue;
+      await card.save();
+      console.log(`  ✅ Fixed "${card.title}" - set nextDue to ${nextDue}`);
+      fixed.push({ id: card._id, title: card.title, nextDue });
+    }
+    
+    res.json({
+      success: true,
+      fixed: fixed.length,
+      cards: fixed,
     });
   } catch (e) {
     res.status(500).json({ error: e.message });

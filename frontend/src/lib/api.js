@@ -90,8 +90,32 @@ export async function debugRecurring() {
   }
 }
 
+// Repair broken recurring cards (missing nextDue field)
+export async function repairRecurring() {
+  try {
+    const res = await fetch(`${BASE}/debug/repair-recurring`, { method: 'POST' });
+    const data = await res.json();
+    console.log('=== REPAIR RECURRING CARDS ===');
+    console.log(`Fixed ${data.fixed} cards`);
+    if (data.cards.length > 0) {
+      console.log('\nRepaired cards:');
+      data.cards.forEach((c, i) => {
+        console.log(`${i + 1}. "${c.title}" - nextDue set to ${c.nextDue}`);
+      });
+    }
+    console.log('\n✅ Repair complete! Refresh the page to see recurring cards.');
+    console.log('==============================');
+    return data;
+  } catch (error) {
+    console.error('Repair failed:', error);
+  }
+}
+
 if (typeof window !== "undefined") {
   window.api = api;
   window.debugRecurring = debugRecurring;
-  console.log('💡 Debug helper available! Type: debugRecurring()');
+  window.repairRecurring = repairRecurring;
+  console.log('💡 Debug helpers available!');
+  console.log('   debugRecurring() - Check recurring card status');
+  console.log('   repairRecurring() - Fix broken recurring cards');
 }
