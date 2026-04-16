@@ -111,11 +111,28 @@ export async function repairRecurring() {
   }
 }
 
+// Force generate ALL recurring cards NOW (ignoring due dates - for testing)
+export async function forceGenerateAll() {
+  try {
+    const res = await fetch(`${BASE}/test/force-generate-all`, { method: 'POST' });
+    const data = await res.json();
+    console.log('=== FORCE GENERATE ALL ===');
+    console.log(`Generated ${data.generated} card instances`);
+    console.log('\n✅ Done! Refresh the page to see them.');
+    console.log('==========================');
+    return data;
+  } catch (error) {
+    console.error('Force generate failed:', error);
+  }
+}
+
 if (typeof window !== "undefined") {
   window.api = api;
   window.debugRecurring = debugRecurring;
   window.repairRecurring = repairRecurring;
+  window.forceGenerateAll = forceGenerateAll;
   console.log('💡 Debug helpers available!');
   console.log('   debugRecurring() - Check recurring card status');
   console.log('   repairRecurring() - Fix broken recurring cards');
+  console.log('   forceGenerateAll() - Force generate all recurring cards NOW');
 }
