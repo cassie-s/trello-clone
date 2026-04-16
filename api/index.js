@@ -123,16 +123,23 @@ function computeNextDue(recurring, fromDate = new Date()) {
   switch (recurring.frequency) {
     case "daily":
       next.setDate(next.getDate() + interval);
+      // Set to start of day (midnight) for daily tasks
+      next.setHours(0, 0, 0, 0);
       break;
     case "weekly":
       next.setDate(next.getDate() + 7 * interval);
+      // Set to start of day for weekly tasks
+      next.setHours(0, 0, 0, 0);
       break;
     case "monthly":
       next.setMonth(next.getMonth() + interval);
       if (recurring.dayOfMonth) next.setDate(recurring.dayOfMonth);
+      // Set to start of day for monthly tasks
+      next.setHours(0, 0, 0, 0);
       break;
     default:
       next.setDate(next.getDate() + interval);
+      next.setHours(0, 0, 0, 0);
   }
   return next;
 }
