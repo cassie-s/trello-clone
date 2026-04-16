@@ -60,6 +60,38 @@ export const api = {
   },
 };
 
+// Debug helper for recurring cards
+export async function debugRecurring() {
+  try {
+    const res = await fetch(`${BASE}/debug/recurring`);
+    const data = await res.json();
+    console.log('=== RECURRING CARDS DEBUG ===');
+    console.log('Current time:', data.currentTime);
+    console.log('Total recurring cards:', data.totalRecurringCards);
+    console.log('\nDetails:');
+    data.cards.forEach((c, i) => {
+      console.log(`\n${i + 1}. "${c.title}"`);
+      console.log(`   ID: ${c.id}`);
+      console.log(`   Board: ${c.boardId}`);
+      console.log(`   List: ${c.listId}`);
+      console.log(`   Due Date: ${c.dueDate}`);
+      console.log(`   Next Due: ${c.recurring.nextDue}`);
+      console.log(`   Frequency: ${c.recurring.frequency} (interval: ${c.recurring.interval})`);
+      console.log(`   Is Due?: ${c.isDue ? 'YES ✅' : 'NO ❌'}`);
+      if (c.nextDueInMs !== null) {
+        const hours = Math.floor(c.nextDueInMs / (1000 * 60 * 60));
+        console.log(`   Time until due: ${hours > 0 ? hours + ' hours' : 'overdue by ' + Math.abs(hours) + ' hours'}`);
+      }
+    });
+    console.log('\n=============================');
+    return data;
+  } catch (error) {
+    console.error('Debug failed:', error);
+  }
+}
+
 if (typeof window !== "undefined") {
   window.api = api;
+  window.debugRecurring = debugRecurring;
+  console.log('💡 Debug helper available! Type: debugRecurring()');
 }

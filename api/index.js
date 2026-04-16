@@ -147,14 +147,22 @@ function computeNextDue(recurring, fromDate = new Date()) {
 // ─── Helper: Generate recurring card instances ────────────────────────────────
 async function generateRecurringInstances() {
   const now = new Date();
-  const recurringCards = await Card.find({
+  const allRecurringCards = await Card.find({
     "recurring.enabled": true,
     archived: false,
     isRecurringInstance: false,
-    "recurring.nextDue": { $lte: now },
   });
+  
+  console.log(`[Recurring] Total recurring cards: ${allRecurringCards.length}`);
+  allRecurringCards.forEach(c => {
+    console.log(`  - "${c.title}": nextDue=${c.recurring.nextDue}, dueDate=${c.dueDate}`);
+  });
+  
+  const recurringCards = allRecurringCards.filter(c => 
+    c.recurring.nextDue && new Date(c.recurring.nextDue) <= now
+  );
 
-  console.log(`Checking recurring cards... Found ${recurringCards.length} ready to generate`);
+  console.log(`[Recurring] Found ${recurringCards.length} ready to generate (nextDue <= now)`);
 
   for (const card of recurringCards) {
     // Create a new instance
@@ -452,6 +460,37 @@ app.post("/api/lists/:listId/cards/reorder", async (req, res) => {
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => res.json({ ok: true }));
+
+// ─── Debug endpoint for recurring cards ───────────────────────────────────────
+app.get("/api/debug/recurring", async (req, res) => {
+  try {
+    const now = new Date();
+    const recurringCards = await Card.find({
+      "recurring.enabled": true,
+      archived: false,
+      isRecurringInstance: false,
+    });
+    
+    const details = recurringCards.map(c => ({
+      id: c._id,
+      title: c.title,
+      boardId: c.boardId,
+      listId: c.listId,
+      dueDate: c.dueDate,
+      recurring: c.recurring,
+      isDue: c.recurring.nextDue && new Date(c.recurring.nextDue) <= now,
+      nextDueInMs: c.recurring.nextDue ? new Date(c.recurring.nextDue).getTime() - now.getTime() : null,
+    }));
+    
+    res.json({
+      currentTime: now.toISOString(),
+      totalRecurringCards: recurringCards.length,
+      cards: details,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ─── Test endpoint to manually trigger recurring card generation ──────────────
 app.post("/api/test/generate-recurring", async (req, res) => {
