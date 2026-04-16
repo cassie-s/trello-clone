@@ -67,20 +67,18 @@ export async function debugRecurring() {
     const data = await res.json();
     console.log('=== RECURRING CARDS DEBUG ===');
     console.log('Current time:', data.currentTime);
-    console.log('Total recurring cards:', data.totalRecurringCards);
-    console.log('\nDetails:');
+    console.log('Total recurring templates:', data.totalRecurringCards);
+    console.log('\nTemplates (hidden from board):');
     data.cards.forEach((c, i) => {
       console.log(`\n${i + 1}. "${c.title}"`);
       console.log(`   ID: ${c.id}`);
-      console.log(`   Board: ${c.boardId}`);
-      console.log(`   List: ${c.listId}`);
-      console.log(`   Due Date: ${c.dueDate}`);
+      console.log(`   Archived (hidden): ${c.archived ? "YES ✅" : "NO ❌ (should be YES)"}`);
       console.log(`   Next Due: ${c.recurring.nextDue}`);
       console.log(`   Frequency: ${c.recurring.frequency} (interval: ${c.recurring.interval})`);
-      console.log(`   Is Due?: ${c.isDue ? 'YES ✅' : 'NO ❌'}`);
+      console.log(`   Is Due?: ${c.isDue ? 'YES ✅ (will generate instance)' : 'NO ❌'}`);
       if (c.nextDueInMs !== null) {
-        const hours = Math.floor(c.nextDueInMs / (1000 * 60 * 60));
-        console.log(`   Time until due: ${hours > 0 ? hours + ' hours' : 'overdue by ' + Math.abs(hours) + ' hours'}`);
+        const hours = Math.floor(Math.abs(c.nextDueInMs) / (1000 * 60 * 60));
+        console.log(`   Time until due: ${c.nextDueInMs > 0 ? hours + ' hours' : 'overdue by ' + hours + ' hours'}`);
       }
     });
     console.log('\n=============================');
@@ -96,14 +94,15 @@ export async function repairRecurring() {
     const res = await fetch(`${BASE}/debug/repair-recurring`, { method: 'POST' });
     const data = await res.json();
     console.log('=== REPAIR RECURRING CARDS ===');
-    console.log(`Fixed ${data.fixed} cards`);
+    console.log(`Fixed ${data.fixed} template(s)`);
     if (data.cards.length > 0) {
-      console.log('\nRepaired cards:');
+      console.log('\nRepaired templates:');
       data.cards.forEach((c, i) => {
-        console.log(`${i + 1}. "${c.title}" - nextDue set to ${c.nextDue}`);
+        console.log(`${i + 1}. "${c.title}" - ${c.changes.join(', ')}`);
       });
     }
-    console.log('\n✅ Repair complete! Refresh the page to see recurring cards.');
+    console.log('\n✅ Repair complete! Templates are now hidden (archived).');
+    console.log('Run forceGenerateAll() to create instances immediately.');
     console.log('==============================');
     return data;
   } catch (error) {
@@ -117,8 +116,9 @@ export async function forceGenerateAll() {
     const res = await fetch(`${BASE}/test/force-generate-all`, { method: 'POST' });
     const data = await res.json();
     console.log('=== FORCE GENERATE ALL ===');
-    console.log(`Generated ${data.generated} card instances`);
-    console.log('\n✅ Done! Refresh the page to see them.');
+    console.log(`Generated ${data.generated} card instance(s)`);
+    console.log('\n✅ Done! Refresh the page to see instances on the board.');
+    console.log('Templates remain hidden (archived).');
     console.log('==========================');
     return data;
   } catch (error) {
