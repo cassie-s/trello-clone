@@ -308,7 +308,7 @@ app.get("/api/lists/:listId/cards", async (req, res) => {
   try {
     // Also generate any pending recurring instances
     await generateRecurringInstances();
-    const cards = await Card.find({ listId: req.listId, archived: false }).sort("position");
+    const cards = await Card.find({ listId: req.params.listId, archived: false }).sort("position");
     res.json(cards);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -352,6 +352,11 @@ app.post("/api/lists/:listId/cards", async (req, res) => {
       position: count,
     };
 
+    // Initialize recurring.nextDue if not set but recurring is enabled
+    if (cardData.recurring?.enabled && !cardData.recurring.nextDue) {
+      cardData.recurring.nextDue = cardData.dueDate || new Date();
+    }
+
     const card = new Card(cardData);
     await card.save();
     res.status(201).json(card);
@@ -386,6 +391,7 @@ app.patch("/api/cards/:id", async (req, res) => {
           interval: card.recurring.interval,
           daysOfWeek: card.recurring.daysOfWeek,
           dayOfMonth: card.recurring.dayOfMonth,
+          nextDue: nextDueDate, // Set this so generateRecurringInstances can find it
         },
         isRecurringInstance: false,
         parentCardId: null,
